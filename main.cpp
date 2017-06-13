@@ -81,7 +81,7 @@ main (int argc, char *argv[]) {
     else if (fffff == 6) {
 
         char filename[200];
-        sprintf(filename, "../../SAT/uf%d-0%d.cnf", ell, pNum);
+        sprintf(filename, "../../SAT/uf%d/uf%d-0%d.cnf", ell, ell, pNum);
 
         printf("Loading: %s\n", filename);
         loadSAT(filename, &mySAT);
