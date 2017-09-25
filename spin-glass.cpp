@@ -286,7 +286,7 @@ int loadSpinGlassInstance(FILE *input, SpinGlassParams *spinGlassParams) {
 
 double spinGlassValue(int *x, SpinGlassParams *spinGlassParams) {
     int i;
-    register int j;
+    int j;
 
     int     N;
     int    *numNeighbors;
@@ -515,7 +515,7 @@ double spinGlassValueDHCOptimal(int *x, SpinGlassParams *spinGlassParams, long &
 
 double spinGlassValueDHC(int *x, SpinGlassParams *spinGlassParams, long &numFlips) {
     int i;
-    register int j;
+    int j;
 
     int     N;
     int    *neighbor;
@@ -597,7 +597,7 @@ double spinGlassValueDHC(int *x, SpinGlassParams *spinGlassParams, long &numFlip
 
     } while (maxImprovement>0);
 
-    delete improvement;
+    delete[] improvement;
 
     if ((spinGlassParams->optimalValue>0)&&
             (f-spinGlassParams->optimalValue>0.00001)) {
