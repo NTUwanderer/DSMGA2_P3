@@ -183,7 +183,7 @@ bool DSMGA2::shouldTerminate () {
     /*
     if (stFitness.getMax() - 1e-10 <= stFitness.getMean() )
         termination = true;
-    	*/
+        */
 
     return termination;
 
@@ -200,7 +200,7 @@ void DSMGA2::showStatistics () {
     printf ("Gen:%d  N:%d  Fitness:(Max/Mean/Min):%f/%f/%f ",
             generation, nCurrent, stFitness.getMax (), stFitness.getMean (),
             stFitness.getMin ());
-    printf ("best chromosome:");
+    printf ("best chromosome:\n");
     population[bestIndex].printOut();
     printf ("\n");
 
@@ -372,7 +372,10 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
     if (resultRM == 2)  {
         // Add copy to the next level
         copy.level = ch.level+1;
+        int p_size = population.size();
         increaseOne(copy);
+        if (p_size == population.size())
+            ++resultRM;
     }
 
     return resultRM;
@@ -440,8 +443,8 @@ void DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     if (trial.getFitness() > real.getFitness()) {
         if (!pFreeze) {
-        pHash.erase(real.getKey());
-        pHash[trial.getKey()] = trial.getFitness();
+            pHash.erase(real.getKey());
+            pHash[trial.getKey()] = trial.getFitness();
         }
 
         EQ = false;
@@ -451,9 +454,9 @@ void DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     if (trial.getFitness() >= real.getFitness()) {
         if (!pFreeze) {
-        pHash.erase(real.getKey());
-        pHash[trial.getKey()] = trial.getFitness();
-	}
+            pHash.erase(real.getKey());
+            pHash[trial.getKey()] = trial.getFitness();
+        }
 
         real = trial;
         return;
@@ -629,12 +632,12 @@ void DSMGA2::mixing() {
         for (int i=0; i<ell; ++i)
             findClique(i, masks[i]);
 
-	genOrderELL();
-	for (int i=0; i<ell; ++i) {
-		int pos = orderELL[i];
-	        resultRM = restrictedMixing(population[nCurrent-1], pos);
-		if (resultRM == 2) break;
-	}
+        genOrderELL();
+        for (int i=0; i<ell; ++i) {
+            int pos = orderELL[i];
+            resultRM = restrictedMixing(population[nCurrent-1], pos);
+            if (resultRM >= 2) break;
+        }
 
         ++level;
     } while (resultRM == 2);
