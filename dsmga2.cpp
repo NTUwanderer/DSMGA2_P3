@@ -366,6 +366,15 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
                 backMixing(copy, mask, population[index]);
         }
 
+        // BM to the current level
+        for (auto index:nIndex[ch.level]) {
+
+            if (EQ)
+                backMixingE(copy, mask, population[index]);
+            else
+                backMixing(copy, mask, population[index]);
+        }
+
         BMhistory[ch.level+1].push_back(BMRecord(copy, mask, EQ, 0.0));
     }
 
@@ -411,8 +420,8 @@ void DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     if (trial.getFitness() > real.getFitness()) {
         if (!pFreeze) {
-        pHash.erase(real.getKey());
-        pHash[trial.getKey()] = trial.getFitness();
+            pHash.erase(real.getKey());
+            pHash[trial.getKey()] = trial.getFitness();
         }
         real = trial;
         return;
