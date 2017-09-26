@@ -252,7 +252,9 @@ void DSMGA2::buildFastCounting(int level) {
             fastCounting[i].init(nIndex[level].size());
 
         int counter = 0;
-        for (int index:nIndex[level]) {
+        // for (int index:nIndex[level]) {
+        for (int i = 0; i < nIndex[level].size(); ++i) {
+            int index = nIndex[level][i];
             for (int j = 0; j < ell; j++) {
                 fastCounting[j].setVal(counter, population[index].getVal(j));
 
@@ -358,7 +360,9 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
     if (resultRM !=0) {
 
         // BM to the next level
-        for (auto index:nIndex[ch.level+1]) {
+        // for (auto index:nIndex[ch.level+1]) {
+        for (int i = 0; i < nIndex[ch.level+1].size(); ++i) {
+            int index = nIndex[ch.level+1][i];
 
             if (EQ)
                 backMixingE(copy, mask, population[index]);
@@ -367,7 +371,9 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
         }
 
         // BM to the current level
-        for (auto index:nIndex[ch.level]) {
+        // for (auto index:nIndex[ch.level]) {
+        for (int i = 0; i < nIndex[ch.level].size(); ++i) {
+            int index = nIndex[ch.level][i];
 
             if (EQ)
                 backMixingE(copy, mask, population[index]);
@@ -558,8 +564,11 @@ size_t DSMGA2::findOrigSize(Chromosome& ch, list<int>& mask) const {
 size_t DSMGA2::findSize(Chromosome& ch, list<int>& mask, int level) const {
 
     DLLA candidate(nCurrent);
-    for (auto i:nIndex[level])
-        candidate.insert(i);
+    // for (auto i:nIndex[level])
+    //     candidate.insert(i);
+
+    for (int i = 0; i < nIndex[level].size(); ++i)
+        candidate.insert(nIndex[level][i]);
 
     size_t size = 0;
     for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it) {
@@ -943,7 +952,9 @@ void DSMGA2::increaseOne (Chromosome& ch) {
     pFreeze = true;
     if (BMhistory.size() > ch.level) {
         if (!BMhistory[ch.level].empty()) {
-            for (auto bm: BMhistory[ch.level]) {
+            // for (auto bm: BMhistory[ch.level]) {
+            for (int i = 0; i < BMhistory[ch.level].size(); ++i) {
+                BMRecord bm = BMhistory[ch.level][i];
                 if (bm.eq) {
                     EQ = true;
                     backMixingE(bm.pattern, bm.mask, ch);
