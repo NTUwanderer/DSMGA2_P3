@@ -15,11 +15,11 @@ do
         nohup nice -n19 ./DSMGA2 $ELL 6 10000 -1 1 1 -1 $i > ./$DIR/$ELL-$NUM &
         echo "Submitting $ELL-$NUM"
         sleep 2
-        TT=$(ps -xaf | grep DSMGA2 | wc -l)
+        TT=$(ps xaf | grep DSMGA2 | wc -l)
         while [ $TT -gt 4 ]
         do
             sleep 1
-            TT=$(ps -xaf | grep DSMGA2 | wc -l)
+            TT=$(ps xaf | grep DSMGA2 | wc -l)
         done
     done
     shift
