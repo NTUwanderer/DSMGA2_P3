@@ -357,14 +357,6 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
     EQ = true;
     if (resultRM !=0) {
 
-        // BM to the next level
-        for (auto index:nIndex[ch.level+1]) {
-
-            if (EQ)
-                backMixingE(copy, mask, population[index]);
-            else
-                backMixing(copy, mask, population[index]);
-        }
 
         // BM to the current level
         for (auto index:nIndex[ch.level]) {
@@ -375,7 +367,7 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
                 backMixing(copy, mask, population[index]);
         }
 
-        BMhistory[ch.level+1].push_back(BMRecord(copy, mask, EQ, 0.0));
+        BMhistory[ch.level].push_back(BMRecord(copy, mask, EQ, 0.0));
     }
 
     if (resultRM == 2)  {
