@@ -6,7 +6,7 @@ exit 1
 fi
 DIR=$1
 FFF=$2
-mkdir $DIR
+mkdir -p $DIR
 while [ $# -gt  2 ]
 do
     for (( i=1; $i<=$REPEAT; i=$i+1 ))

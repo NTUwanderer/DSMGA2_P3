@@ -5,7 +5,7 @@ echo "./run-nk DIR ell1 ell2 ... ellN"
 exit 1
 fi
 DIR=$1
-mkdir $DIR
+mkdir -p $DIR
 while [ $# -gt  1 ]
 do
     for (( i=1; $i<=$REPEAT; i=$i+1 ))
