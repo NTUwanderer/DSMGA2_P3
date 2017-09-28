@@ -935,7 +935,11 @@ void DSMGA2::increaseOne (Chromosome& ch) {
     pFreeze = true;
     if (BMhistory.size() > ch.level) {
         if (!BMhistory[ch.level].empty()) {
-            for (auto bm: BMhistory[ch.level]) {
+            auto BMs = BMhistory[ch.level];
+            random_shuffle(BMs.begin(), BMs.end());
+            // BMs.resize(BMs.size() / 2);
+
+            for (auto bm: BMs) {
                 if (bm.eq) {
                     EQ = true;
                     backMixingE(bm.pattern, bm.mask, ch);
