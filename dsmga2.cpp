@@ -203,6 +203,14 @@ void DSMGA2::showStatistics () {
     printf ("best chromosome:\n");
     population[bestIndex].printOut();
     printf ("\n");
+    
+    printf ("Population in each level:");
+    for (auto indices:nIndex) {
+        if (indices.empty())
+            break;
+        printf (" %lu", indices.size());
+    }
+    printf ("\n");
 
 
     fflush(NULL);
@@ -353,22 +361,7 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 
     Chromosome copy = ch;
     int resultRM = restrictedMixing(copy, mask);
-
-    EQ = true;
-    if (resultRM !=0) {
-
-
-        // BM to the current level
-        for (auto index:nIndex[ch.level]) {
-
-            if (EQ)
-                backMixingE(copy, mask, population[index]);
-            else
-                backMixing(copy, mask, population[index]);
-        }
-
-        BMhistory[ch.level].push_back(BMRecord(copy, mask, EQ, 0.0));
-    }
+    Chromosome temp = copy;
 
     if (resultRM == 2)  {
         // Add copy to the next level
@@ -377,6 +370,21 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
         increaseOne(copy);
         if (p_size == population.size())
             ++resultRM;
+    }
+
+    EQ = true;
+    if (resultRM !=0) {
+
+        // BM to the current level
+        for (auto index:nIndex[temp.level]) {
+
+            if (EQ)
+                backMixingE(temp, mask, population[index]);
+            else
+                backMixing(temp, mask, population[index]);
+        }
+
+        BMhistory[temp.level].push_back(BMRecord(temp, mask, EQ, 0.0));
     }
 
     return resultRM;
