@@ -204,6 +204,14 @@ void DSMGA2::showStatistics () {
     population[bestIndex].printOut();
     printf ("\n");
 
+    printf ("Population in each level:");
+    for (auto indices:nIndex) {
+        if (indices.empty())
+            break;
+        printf (" %lu", indices.size());
+    }
+    printf ("\n");
+
 
     fflush(NULL);
 }
@@ -935,7 +943,9 @@ void DSMGA2::increaseOne (Chromosome& ch) {
     pFreeze = true;
     if (BMhistory.size() > ch.level) {
         if (!BMhistory[ch.level].empty()) {
-            for (auto bm: BMhistory[ch.level]) {
+            auto& history = BMhistory[ch.level];
+            random_shuffle(history.begin(), history.end());
+            for (auto bm: history) {
                 if (bm.eq) {
                     EQ = true;
                     backMixingE(bm.pattern, bm.mask, ch);
