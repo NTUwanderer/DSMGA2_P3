@@ -212,7 +212,6 @@ void DSMGA2::showStatistics () {
     }
     printf ("\n");
 
-
     fflush(NULL);
 }
 
@@ -256,16 +255,35 @@ void DSMGA2::buildFastCounting(int level) {
 
     } else {
 
-        for (int i = 0; i < ell; i++)
-            fastCounting[i].init(nIndex[level].size());
-
-        int counter = 0;
-        for (int index:nIndex[level]) {
-            for (int j = 0; j < ell; j++) {
-                fastCounting[j].setVal(counter, population[index].getVal(j));
-
+        if (level >= 0) {
+            for (int i = 0; i < ell; i++)
+                fastCounting[i].init(nIndex[level].size());
+    
+            int counter = 0;
+            
+            for (int index:nIndex[level]) {
+                for (int j = 0; j < ell; j++) {
+                    fastCounting[j].setVal(counter, population[index].getVal(j));
+    
+                }
+                ++counter;
+    
             }
-            ++counter;
+
+        } else {
+            for (int i = 0; i < ell; i++)
+                fastCounting[i].init(nCurrent);
+    
+            int counter = 0;
+            
+            for (int index = 0; index < nCurrent; ++index) {
+                for (int j = 0; j < ell; j++) {
+                    fastCounting[j].setVal(counter, population[index].getVal(j));
+    
+                }
+                ++counter;
+    
+            }
 
         }
     }
