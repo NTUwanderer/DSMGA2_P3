@@ -84,6 +84,9 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
         nIndex.push_back(vector<int>(0));
         BMhistory.push_back(vector<BMRecord>(0));
     }
+
+    for (int i=0; i<nCurrent; ++i)
+        nIndex[0].push_back(i);
 }
 
 
@@ -115,12 +118,94 @@ bool DSMGA2::isSteadyState () {
 int DSMGA2::doIt (bool output) {
     generation = 0;
 
+    initialBuildLevels();
+
     while (!shouldTerminate ()) {
         oneRun (output);
     }
     return generation;
 }
 
+
+void DSMGA2::initialBuildLevels(bool output) {
+
+    // int resultRM = 0;
+    int level = 0;
+    bool success = false;
+    vector<int> candidates;
+    for (int i=0; i<ell; ++i)
+        candidates.push_back(i);
+    do {
+        if (SELECTION)
+            selection(level);
+        buildFastCounting(level);
+        buildGraph();
+
+        for (int i=0; i<ell; ++i)
+            findClique(i, masks[i]);
+
+        success = false;
+        random_shuffle(candidates.begin(), candidates.end());
+        for (int i=0; i<candidates.size(); ++i) {
+            int pos = candidates[i];
+            auto deck = nIndex[level];
+            random_shuffle(deck.begin(), deck.end());
+            for (int j : deck) {
+                restrictedMixing(population[j], pos, true);
+                if (BMlevel.size() > level) {
+                    BMRecord record = BMlevel.back();
+                    printf("level: %i, Mask:", level);
+                    for (auto i : record.mask) {
+                        printf("\t%i", i);
+
+                        auto pos = find(candidates.begin(), candidates.end(), i);
+                        if (pos != candidates.end())
+                            candidates.erase(pos);
+                    }
+                    printf("\n");
+                    record.pattern.printOut();
+                    printf("\n");
+                    success = true;
+                    break;
+                }
+
+            }
+            if (success)
+                break;
+        }
+        if (!success) {
+            printf ("Fail QQ, nIndex[level].size: %lu, c.size: %lu\n", nIndex[level].size(), candidates.size());
+            --level;
+        }
+
+        ++level;
+    } while (!candidates.empty() && success);
+
+    double max = -INF;
+    stFitness.reset ();
+
+    for (int i = 0; i < nCurrent; ++i) {
+        double fitness = population[i].getFitness();
+        if (fitness > max) {
+            max = fitness;
+            bestIndex = i;
+        }
+        stFitness.record (fitness);
+
+        if (SHOW_POPULATION) {
+            if (SHORT_HAND)
+                population[i].printOut();
+            else
+                population[i].shortPrintOut();
+            cout << endl;
+        }
+    }
+
+    if (output)
+        showStatistics ();
+
+    ++generation;
+}
 
 void DSMGA2::oneRun (bool output) {
 
@@ -343,7 +428,7 @@ int DSMGA2::countXOR(int x, int y) const {
 }
 
 // Do BM
-int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
+int DSMGA2::restrictedMixing(Chromosome& ch, int pos, bool init) {
 
     list<int> mask = masks[pos];
 
@@ -358,12 +443,11 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
     while (mask.size() > size)
         mask.pop_back();
 
-
     Chromosome copy = ch;
     int resultRM = restrictedMixing(copy, mask);
     Chromosome temp = copy;
 
-    if (resultRM == 2)  {
+    if (resultRM == 2 && !init)  {
         // Add copy to the next level
         copy.level = ch.level+1;
         int p_size = population.size();
@@ -374,17 +458,20 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 
     EQ = true;
     if (resultRM !=0) {
+        if (init)
+            BMlevel.push_back(BMRecord(temp, mask, EQ, 0.0));
 
         // BM to the current level
         for (auto index:nIndex[temp.level]) {
+            tempIndex = index;
 
             if (EQ)
-                backMixingE(temp, mask, population[index]);
+                backMixingE(temp, mask, population[index], init);
             else
-                backMixing(temp, mask, population[index]);
+                backMixing(temp, mask, population[index], init);
         }
 
-        BMhistory[temp.level].push_back(BMRecord(temp, mask, EQ, 0.0));
+        // BMhistory[temp.level].push_back(BMRecord(temp, mask, EQ, 0.0));
     }
 
     return resultRM;
@@ -397,7 +484,7 @@ int DSMGA2::restrictedMixing(Chromosome& ch) {
 
 }
 
-void DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
+void DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des, bool init) {
 
     Chromosome trial = des;
 
@@ -429,12 +516,26 @@ void DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
 
 }
 
-void DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
+void DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des, bool init) {
 
     Chromosome trial = des;
 
     for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
         trial.setVal(*it, source.getVal(*it));
+
+    if (init) {
+        if (trial == des) {
+            nIndex[des.level].erase(find(nIndex[des.level].begin(), nIndex[des.level].end(), tempIndex));
+            ++(des.level);
+            nIndex[des.level].push_back(tempIndex);
+    
+        } else if (trial.getFitness() >= des.getFitness()) {
+            ++(trial.level);
+            increaseOne(trial);
+        }
+
+        return;
+    }
 
     Chromosome& real = des;
 

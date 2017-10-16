@@ -30,6 +30,7 @@ public:
     void tournamentSelection(int);
     void OrigSelection();
 
+    void initialBuildLevels (bool output = true);
     void oneRun (bool output = true);
     int doIt (bool output = true);
 
@@ -43,10 +44,10 @@ public:
     // 2: >
     int restrictedMixing(Chromosome&);
     int restrictedMixing(Chromosome& ch, list<int>& mask);
-    int restrictedMixing(Chromosome& ch, int pos);
+    int restrictedMixing(Chromosome& ch, int pos, bool init = false);
 
-    void backMixing(Chromosome& source, list<int>& mask, Chromosome& des);
-    void backMixingE(Chromosome& source, list<int>& mask, Chromosome& des);
+    void backMixing(Chromosome& source, list<int>& mask, Chromosome& des, bool init = false);
+    void backMixingE(Chromosome& source, list<int>& mask, Chromosome& des, bool init = false);
 
     bool shouldTerminate ();
 
@@ -75,9 +76,11 @@ public:
     int nPrev;                             // population size
     bool EQ;
     bool pFreeze;
+    int tempIndex;
     unordered_map<unsigned long, double> pHash; // to check if a chromosome is in the population
 
     vector<vector<BMRecord> > BMhistory;
+    vector<BMRecord> BMlevel;
     vector<vector<int> > nIndex;
 
     list<int> *masks;
