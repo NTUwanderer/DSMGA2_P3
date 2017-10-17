@@ -138,7 +138,7 @@ void DSMGA2::initialBuildLevels(bool output) {
     do {
         if (SELECTION)
             selection(level);
-        buildFastCounting(level);
+        buildFastCounting(-1);
         buildGraph();
 
         for (int i=0; i<ell; ++i)
@@ -175,6 +175,7 @@ void DSMGA2::initialBuildLevels(bool output) {
         }
         if (!success) {
             printf ("Fail QQ, nIndex[level].size: %lu, c.size: %lu\n", nIndex[level].size(), candidates.size());
+            printf ("nfe: %i, hitnfe: %i, lsnfe: %i\n", Chromosome::nfe, Chromosome::hitnfe, Chromosome::lsnfe);
             --level;
         }
 
@@ -476,9 +477,14 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos, bool init) {
 
     EQ = true;
     if (resultRM !=0) {
-        if (init)
+        if (init) {
+            if (mask.size() < 2)
+                return 0;
             BMlevel.push_back(BMRecord(temp, mask, EQ, 0.0));
+        }
 
+        if (!init && temp.level < BMlevel.size())
+            return resultRM;
         // BM to the current level
         for (auto index:nIndex[temp.level]) {
             tempIndex = index;
@@ -489,7 +495,7 @@ int DSMGA2::restrictedMixing(Chromosome& ch, int pos, bool init) {
                 backMixing(temp, mask, population[index], init);
         }
 
-        // BMhistory[temp.level].push_back(BMRecord(temp, mask, EQ, 0.0));
+        BMhistory[temp.level].push_back(BMRecord(temp, mask, EQ, 0.0));
     }
 
     return resultRM;
@@ -754,7 +760,7 @@ void DSMGA2::mixing() {
 
         if (SELECTION)
             selection(level);
-        buildFastCounting(level);
+        buildFastCounting(-1);
         buildGraph();
 
         for (int i=0; i<ell; ++i)
