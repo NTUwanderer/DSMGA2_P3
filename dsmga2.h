@@ -77,6 +77,7 @@ public:
     bool EQ;
     bool pFreeze;
     int tempIndex;
+    bool initBuilding;
     unordered_map<unsigned long, double> pHash; // to check if a chromosome is in the population
 
     vector<vector<BMRecord> > BMhistory;

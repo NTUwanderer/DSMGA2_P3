@@ -130,6 +130,7 @@ int DSMGA2::doIt (bool output) {
 void DSMGA2::initialBuildLevels(bool output) {
 
     // int resultRM = 0;
+    initBuilding = true;
     int level = 0;
     bool success = false;
     vector<int> candidates;
@@ -181,6 +182,7 @@ void DSMGA2::initialBuildLevels(bool output) {
 
         ++level;
     } while (!candidates.empty() && success);
+    initBuilding = false;
 
     double max = -INF;
     stFitness.reset ();
@@ -623,7 +625,7 @@ int DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
         double fff = trial.getFitness();
 
 
-        if (fff >= ch.getFitness()) {
+        if ((initBuilding && fff > ch.getFitness()) || (!initBuilding && fff >= ch.getFitness())) {
 /*
             pHash.erase(ch.getKey());
             pHash[trial.getKey()] = trial.getFitness();
@@ -762,6 +764,23 @@ void DSMGA2::mixing() {
             selection(level);
         buildFastCounting(-1);
         buildGraph();
+
+        /*
+        if (level < BMlevel.size()) {
+            vector<int> order;
+            for (int i:BMlevel[level].mask) {
+                findClique(i, masks[i]);
+                order.push_back(i);
+            }
+
+            random_shuffle(order.begin(), order.end());
+            for (int i=0; i<order.size(); ++i) {
+                int pos = order[i];
+            }
+
+            continue;
+        }
+        */
 
         for (int i=0; i<ell; ++i)
             findClique(i, masks[i]);
