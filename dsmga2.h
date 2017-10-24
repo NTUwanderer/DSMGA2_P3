@@ -95,6 +95,7 @@ public:
     int **successCount;
     double **weightCount;
     int **failCount;
+    int resCount;
 
     vector<Chromosome> population;
     vector<Chromosome> orig_popu;

@@ -98,6 +98,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
             failCount[i][j] = 0;
         }
     }
+    resCount = 0;
 }
 
 
@@ -140,15 +141,22 @@ int DSMGA2::doIt (bool output) {
     while (!shouldTerminate ()) {
         oneRun (output);
     }
-    printf ("successCount:\n");
+    int blockSize = 6;
+    if (Chromosome::function == 1)
+        blockSize = 5;
+    if (Chromosome::function == 5)
+        blockSize = 10;
+    printf ("resCount: %i\nsuccessCount:\n", resCount);
     for (int i=0; i<ell; ++i) {
         for (int j=0; j<ell; ++j) {
             if (i == j)
-                printf ("-\t");
+                printf (" *");
             else if (successCount[i][j] > 0)
-                printf ("%i\t", successCount[i][j]);
+                printf ("%2i", successCount[i][j]);
+            else if (i % blockSize == 0 || j % blockSize == 0)
+                printf (" .");
             else
-                printf (" \t");
+                printf ("  ");
         }
         printf("\n");
     }
@@ -156,9 +164,25 @@ int DSMGA2::doIt (bool output) {
     for (int i=0; i<ell; ++i) {
         for (int j=0; j<ell; ++j) {
             if (i == j)
-                printf ("-\t");
-            else if (weightCount[i][j] > 0)
+                printf ("*\t");
+            else if (weightCount[i][j] != 0)
+                printf ("%f\t", weightCount[i][j]);
+            else if (i % blockSize == 0 || j % blockSize == 0)
+                printf (".\t");
+            else
+                printf (" \t");
+        }
+        printf("\n");
+    }
+    printf ("weightCount2:\n");
+    for (int i=0; i<ell; ++i) {
+        for (int j=0; j<ell; ++j) {
+            if (i == j)
+                printf ("*\t");
+            else if (weightCount[i][j] != 0)
                 printf ("%4.2f\t", weightCount[i][j]);
+            else if (i % blockSize == 0 || j % blockSize == 0)
+                printf (".\t");
             else
                 printf (" \t");
         }
@@ -168,9 +192,11 @@ int DSMGA2::doIt (bool output) {
     for (int i=0; i<ell; ++i) {
         for (int j=0; j<ell; ++j) {
             if (i == j)
-                printf ("-\t");
+                printf ("*\t");
             else if (failCount[i][j] > 0)
                 printf ("%i\t", failCount[i][j]);
+            else if (i % blockSize == 0 || j % blockSize == 0)
+                printf (".\t");
             else
                 printf (" \t");
         }
@@ -576,6 +602,7 @@ int DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
 
     // prune mask for backmixing
     if (lastUB != 0) {
+        ++resCount;
         while (mask.size() > lastUB)
             mask.pop_back();
 
