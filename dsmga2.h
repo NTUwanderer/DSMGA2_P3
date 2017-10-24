@@ -92,6 +92,9 @@ public:
     int repeat;
     int generation;
     int bestIndex;
+    int **successCount;
+    double **weightCount;
+    int **failCount;
 
     vector<Chromosome> population;
     vector<Chromosome> orig_popu;

@@ -84,6 +84,20 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
         nIndex.push_back(vector<int>(0));
         BMhistory.push_back(vector<BMRecord>(0));
     }
+
+    successCount = new int*[ell];
+    weightCount = new double*[ell];
+    failCount = new int*[ell];
+    for (int i=0; i<ell; ++i) {
+        successCount[i] = new int[ell];
+        weightCount[i] = new double[ell];
+        failCount[i] = new int[ell];
+        for (int j=0; j<ell; ++j) {
+            successCount[i][j] = 0;
+            weightCount[i][j] = 0;
+            failCount[i][j] = 0;
+        }
+    }
 }
 
 
@@ -93,6 +107,14 @@ DSMGA2::~DSMGA2 () {
     delete []orderELL;
     delete []fastCounting;
     delete []orig_fc;
+    for (int i=0; i<ell; ++i) {
+        delete[] successCount[i];
+        delete[] weightCount[i];
+        delete[] failCount[i];
+    }
+    delete[] successCount;
+    delete[] weightCount;
+    delete[] failCount;
 }
 
 
@@ -118,6 +140,43 @@ int DSMGA2::doIt (bool output) {
     while (!shouldTerminate ()) {
         oneRun (output);
     }
+    printf ("successCount:\n");
+    for (int i=0; i<ell; ++i) {
+        for (int j=0; j<ell; ++j) {
+            if (i == j)
+                printf ("-\t");
+            else if (successCount[i][j] > 0)
+                printf ("%i\t", successCount[i][j]);
+            else
+                printf (" \t");
+        }
+        printf("\n");
+    }
+    printf ("weightCount:\n");
+    for (int i=0; i<ell; ++i) {
+        for (int j=0; j<ell; ++j) {
+            if (i == j)
+                printf ("-\t");
+            else if (weightCount[i][j] > 0)
+                printf ("%4.2f\t", weightCount[i][j]);
+            else
+                printf (" \t");
+        }
+        printf("\n");
+    }
+    printf ("failCount:\n");
+    for (int i=0; i<ell; ++i) {
+        for (int j=0; j<ell; ++j) {
+            if (i == j)
+                printf ("-\t");
+            else if (failCount[i][j] > 0)
+                printf ("%i\t", failCount[i][j]);
+            else
+                printf (" \t");
+        }
+        printf("\n");
+    }
+
     return generation;
 }
 
@@ -479,7 +538,8 @@ int DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
     int result = 0;
     size_t lastUB = 0;
 
-    for (size_t ub = 1; ub <= mask.size(); ++ub) {
+    size_t ub;
+    for (ub = 1; ub <= mask.size(); ++ub) {
 
         size_t size = 1;
         Chromosome trial = ch;
@@ -518,7 +578,32 @@ int DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
     if (lastUB != 0) {
         while (mask.size() > lastUB)
             mask.pop_back();
+
+        for (auto it = mask.begin(); it != mask.end(); ++it) {
+            for (auto jt = mask.begin(); jt != it; ++jt) {
+                successCount[*it][*jt] += 1;
+                successCount[*jt][*it] += 1;
+            }
+        }
+        for (auto it = mask.begin(); it != --mask.end(); ++it) {
+            for (auto jt = mask.begin(); jt != it; ++jt) {
+                weightCount[*it][*jt] -= 2.0 / (lastUB - 2);
+                weightCount[*jt][*it] -= 2.0 / (lastUB - 2);
+            }
+        }
+        for (auto it = mask.begin(); it != --mask.end(); ++it) {
+            weightCount[*it][mask.back()] += 1;
+        }
+
+    } else {
+        for (auto it = mask.begin(); it != mask.end(); ++it) {
+            for (auto jt = mask.begin(); jt != it; ++jt) {
+                failCount[*it][*jt] += 1;
+                failCount[*jt][*it] += 1;
+            }
+        }
     }
+
 
     return result;
 
